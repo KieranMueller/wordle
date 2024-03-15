@@ -26,5 +26,7 @@ public class User {
     private String password;
     private String email;
     private String phone;
+    private int points;
+    private int currentWordlesOwned;
     private boolean confirmedEmail;
 }

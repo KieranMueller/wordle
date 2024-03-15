@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,10 +18,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final BCryptPasswordEncoder encoder;
 
     public Boolean validateLogin(LoginModel loginModel) {
-        return userRepository.findByUsernameAndPasswordAndConfirmedEmailTrue(
-                loginModel.getUsername(), loginModel.getPassword()) != null;
+        User user = userRepository.findByUsernameIgnoreCase(loginModel.getUsername());
+        return (user != null && user.isConfirmedEmail() && encoder.matches(loginModel.getPassword(), user.getPassword()));
     }
 
     public ResponseEntity<String> createNewUser(@Valid User user) {
@@ -30,6 +32,7 @@ public class UserService {
             return new ResponseEntity<>("Username Already Exists", HttpStatus.BAD_REQUEST);
         if (userRepository.findByEmailIgnoreCase(user.getEmail()) != null)
             return new ResponseEntity<>("Email Already Exists", HttpStatus.BAD_REQUEST);
+        user.setPassword(encoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         handleEmail(user);
         return new ResponseEntity<>("Saved User With ID: " + savedUser.getId() + ". Check Email for Confirmation",
@@ -68,6 +71,6 @@ public class UserService {
         // Unfinished
         emailService.sendEmail("kieran98mueller@gmail.com",
                 "Wordle by Kieran User Confirmation!",
-                "Please Click This Link to Login\nhttps://www.youtube.com/watch?v=BzGm2NtyfE4&t=176s");
+                "Please Click This Link to Login\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ");
     }
 }

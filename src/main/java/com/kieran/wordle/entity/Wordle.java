@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Builder
@@ -20,8 +21,12 @@ public class Wordle {
     private Long id;
     private Long ownerId;
     private String word;
-    private Integer attempts;
-    private Integer winners;
+    @Builder.Default
+    private Integer attempts = 5;
+    @Builder.Default
+    private Integer winners = 0;
     private Integer timeLimit;
     private List<String> hints;
+    @Builder.Default
+    private UUID uuidLink = UUID.randomUUID();
 }
