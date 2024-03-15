@@ -1,0 +1,25 @@
+server:
+  port: 8080
+spring:
+  mail:
+    host: live.smtp.mailtrap.io
+    port: 2525
+    username: api
+    password: c67e7be0a035300a65a828fdfbf76432
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  application:
+    name: wordle
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/wordle
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
