@@ -1,5 +1,6 @@
 package com.kieran.wordle.controller;
 
+import com.kieran.wordle.dto.UserResponseDto;
 import com.kieran.wordle.entity.User;
 import com.kieran.wordle.model.LoginModel;
 import com.kieran.wordle.service.UserService;
@@ -17,8 +18,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("users/{username}")
-    public ResponseEntity<String> findUserByUsername(@PathVariable String username) {
-        return null;
+    public ResponseEntity<UserResponseDto> findUserByUsername(@PathVariable String username) {
+        return userService.findUserByUsername(username);
     }
 
     @PostMapping("login")
@@ -37,7 +38,7 @@ public class UserController {
         return userService.updateUser(user);
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("delete/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id);
     }

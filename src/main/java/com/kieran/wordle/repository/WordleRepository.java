@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface WordleRepository extends JpaRepository<Wordle, Long> {
     List<Wordle> findByOwnerIdIs(Long id);
+    void deleteAllByOwnerId(Long id);
 }

@@ -28,7 +28,7 @@ public class DBInitializer implements CommandLineRunner {
                 .password("Japs")
                 .email("kieran@gmail.com")
                 .phone("612-508-9457")
-//                .confirmedEmail(true)
+                .confirmedEmail(true)
                 .currentWordlesOwned(1)
                 .build();
         user1.setPassword(encoder.encode(user1.getPassword()));
