@@ -2,6 +2,7 @@ package com.kieran.wordle.controller;
 
 import com.kieran.wordle.dto.UserResponseDto;
 import com.kieran.wordle.entity.User;
+import com.kieran.wordle.model.AuthResponse;
 import com.kieran.wordle.model.LoginModel;
 import com.kieran.wordle.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,13 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin
 @Slf4j
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("users/{username}")
-    public ResponseEntity<UserResponseDto> findUserByUsername(@PathVariable String username) {
+    public UserResponseDto findUserByUsername(@PathVariable String username) {
         return userService.findUserByUsername(username);
     }
 
@@ -29,17 +31,22 @@ public class UserController {
 
     @PostMapping("create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> createNewUser(@RequestBody User user) {
+    public UserResponseDto createNewUser(@RequestBody User user) {
         return userService.createNewUser(user);
     }
 
+    @PostMapping("authenticate")
+    public String authenticate(@RequestBody LoginModel loginModel) {
+        return userService.authenticate(loginModel);
+    }
+
     @PatchMapping("update")
-    public ResponseEntity<String> updateUser(@RequestBody User user) {
+    public UserResponseDto updateUser(@RequestBody User user) {
         return userService.updateUser(user);
     }
 
     @DeleteMapping("delete/users/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    public UserResponseDto deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id);
     }
 

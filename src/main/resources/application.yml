@@ -15,6 +15,7 @@ spring:
   application:
     name: wordle
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create-drop
     show-sql: false

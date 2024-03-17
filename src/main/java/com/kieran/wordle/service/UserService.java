@@ -2,13 +2,13 @@ package com.kieran.wordle.service;
 
 import com.kieran.wordle.dto.UserResponseDto;
 import com.kieran.wordle.entity.User;
+import com.kieran.wordle.exception.BadRequestException;
+import com.kieran.wordle.exception.NotFoundException;
 import com.kieran.wordle.model.LoginModel;
 import com.kieran.wordle.repository.UserRepository;
 import com.kieran.wordle.repository.WordleRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +28,10 @@ public class UserService {
     if so, we map the User found to a UserResponseObject to mask password, email, phone etc. and return user.
     TODO
      */
-    public ResponseEntity<UserResponseDto> findUserByUsername(String username) {
+    public UserResponseDto findUserByUsername(String username) {
         User user = userRepository.findByUsernameIgnoreCaseAndConfirmedEmailTrue(username);
-        if (user == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        else {
-            UserResponseDto response = UserResponseDto.mapUserToUserResponseDto(user);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+        if (user == null) throw new NotFoundException("Unable to find user with username " + username);
+        else return UserResponseDto.mapUserToUserResponseDto(user);
     }
 
     /*
@@ -55,16 +52,24 @@ public class UserService {
     - handle validation errors
     - implement email service (not finished!!)
      */
-    public ResponseEntity<String> createNewUser(User user) {
+    public UserResponseDto createNewUser(User user) {
         if (userRepository.findByUsernameIgnoreCase(user.getUsername()) != null)
-            return new ResponseEntity<>("Username Already Exists", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Username already exists");
         if (userRepository.findByEmailIgnoreCase(user.getEmail()) != null)
-            return new ResponseEntity<>("Email Already Exists", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Email already exists");
         user.setPassword(encoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
-        handleEmail(user);
-        return new ResponseEntity<>("Saved User With ID: " + savedUser.getId() + ". Check Email for Confirmation",
-                HttpStatus.CREATED);
+//        handleEmail(user);
+        return UserResponseDto.mapUserToUserResponseDto(savedUser);
+    }
+
+    /*
+    TODO
+    - Unfinished, implement JWT here
+     */
+    public String authenticate(LoginModel loginModel) {
+        if (!validateLogin(loginModel)) throw new BadRequestException("Invalid credentials");
+        return null;
     }
 
     /*
@@ -73,13 +78,12 @@ public class UserService {
     Save user and return 200.
     TODO
      */
-    public ResponseEntity<String> updateUser(User user) {
+    public UserResponseDto updateUser(User user) {
         Optional<User> opUser = userRepository.findById(user.getId());
-        if (opUser.isEmpty()) return new ResponseEntity<>(
-                "Unable to Find User With ID: " + user.getId(), HttpStatus.BAD_REQUEST);
+        if (opUser.isEmpty()) throw new NotFoundException("Unable to find user with ID: " + user.getId());
         User updatedUser = updateUserFields(user, opUser.get());
-        userRepository.save(updatedUser);
-        return new ResponseEntity<>("Updated User", HttpStatus.OK);
+        User savedUser = userRepository.save(updatedUser);
+        return UserResponseDto.mapUserToUserResponseDto(savedUser);
     }
 
     /*
@@ -88,13 +92,12 @@ public class UserService {
     TODO
      */
     @Transactional
-    public ResponseEntity<String> deleteUser(Long id) {
+    public UserResponseDto deleteUser(Long id) {
         Optional<User> opUser = userRepository.findById(id);
-        if (opUser.isEmpty()) return new ResponseEntity<>("Unable to Find User with ID: " + id,
-                HttpStatus.BAD_REQUEST);
+        if (opUser.isEmpty()) throw new BadRequestException("Unable to find user with ID: " + id);
         wordleRepository.deleteAllByOwnerId(id);
         userRepository.deleteById(id);
-        return new ResponseEntity<>("Deleted User with ID " + id, HttpStatus.OK);
+        return UserResponseDto.mapUserToUserResponseDto(opUser.get());
     }
 
     /*

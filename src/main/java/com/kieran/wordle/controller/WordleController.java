@@ -15,12 +15,12 @@ public class WordleController {
     private final WordleService wordleService;
 
     @GetMapping("wordles/users/{id}")
-    public ResponseEntity<List<Wordle>> getAllWordlesCreatedByUser(@PathVariable Long id) {
+    public List<Wordle> getAllWordlesCreatedByUser(@PathVariable Long id) {
         return wordleService.getAllWordlesCreatedByUser(id);
     }
 
     @PostMapping("wordle")
-    public ResponseEntity<String> createWordle(@RequestBody Wordle wordle) {
+    public Wordle createWordle(@RequestBody Wordle wordle) {
         wordle.setWord(wordle.getWord().toLowerCase());
         // Handle field validation on front end
         // Need JWT in request body so somebody doesn't just spam postman
@@ -28,7 +28,7 @@ public class WordleController {
     }
 
     @DeleteMapping("wordle/{id}")
-    public ResponseEntity<String> deleteWordle(Long id) {
+    public Wordle deleteWordle(Long id) {
         return wordleService.deleteWordle(id);
     }
 

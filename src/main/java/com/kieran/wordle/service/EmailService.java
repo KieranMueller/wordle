@@ -12,7 +12,6 @@ public class EmailService {
 
     private final JavaMailSender javaMailSender;
 
-    @Async
     public void sendEmail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
