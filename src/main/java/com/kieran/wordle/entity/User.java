@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Builder
 @Getter
@@ -28,5 +30,11 @@ public class User {
     private String phone;
     private int points;
     private int currentWordlesOwned;
+    @Builder.Default
+    private String emailUuid = String.valueOf(UUID.randomUUID());
     private boolean confirmedEmail;
+    @Builder.Default
+    private String resetPasswordUuid = String.valueOf(UUID.randomUUID());
+    private String newPassword;
+
 }

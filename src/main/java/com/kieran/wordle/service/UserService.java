@@ -4,7 +4,9 @@ import com.kieran.wordle.dto.UserResponseDto;
 import com.kieran.wordle.entity.User;
 import com.kieran.wordle.exception.BadRequestException;
 import com.kieran.wordle.exception.NotFoundException;
+import com.kieran.wordle.model.ForgotPasswordRequest;
 import com.kieran.wordle.model.LoginModel;
+import com.kieran.wordle.model.NewPasswordRequest;
 import com.kieran.wordle.repository.UserRepository;
 import com.kieran.wordle.repository.WordleRepository;
 import jakarta.transaction.Transactional;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,14 @@ public class UserService {
         User user = userRepository.findByUsernameIgnoreCaseAndConfirmedEmailTrue(username);
         if (user == null) throw new NotFoundException("Unable to find user with username " + username);
         else return UserResponseDto.mapUserToUserResponseDto(user);
+    }
+
+    public String loginViaEmailUuid(String uuid) {
+        User user = userRepository.findByEmailUuid(uuid);
+        if (user == null) throw new BadRequestException("Something went wrong");
+        user.setConfirmedEmail(true);
+        userRepository.save(user);
+        return "Good to go " + user.getUsername() + "! Please revisit the site and sign in";
     }
 
     /*
@@ -57,19 +68,39 @@ public class UserService {
             throw new BadRequestException("Username already exists");
         if (userRepository.findByEmailIgnoreCase(user.getEmail()) != null)
             throw new BadRequestException("Email already exists");
+        handleNewUserEmail(user);
         user.setPassword(encoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
-//        handleEmail(user);
         return UserResponseDto.mapUserToUserResponseDto(savedUser);
     }
 
-    /*
-    TODO
-    - Unfinished, implement JWT here
-     */
-    public String authenticate(LoginModel loginModel) {
-        if (!validateLogin(loginModel)) throw new BadRequestException("Invalid credentials");
-        return null;
+    public UserResponseDto forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+        User user = userRepository.findByEmailOrUsernameIgnoreCase(
+                forgotPasswordRequest.getEmail(), forgotPasswordRequest.getUsername());
+        validateUser(user);
+        resetPasswordEmail(user);
+        return UserResponseDto.mapUserToUserResponseDto(user);
+    }
+
+    // setting new email uuid to make things more secure, in the final email confirm, we need to find this user by the
+    // new email uuid, then set the new password etc.
+    public UserResponseDto createNewPassword(NewPasswordRequest newPasswordRequest) {
+        User user = userRepository.findByResetPasswordUuid(newPasswordRequest.getResetPasswordUuid());
+        validateUser(user);
+        String newUuid = UUID.randomUUID().toString();
+        user.setEmailUuid(newUuid);
+        user.setNewPassword(encoder.encode(newPasswordRequest.getPassword()));
+        User savedUser = userRepository.save(user);
+        confirmPasswordResetEmail(savedUser);
+        return UserResponseDto.mapUserToUserResponseDto(user);
+    }
+
+    public String confirmPasswordChange(String emailUuid) {
+        User user = userRepository.findByEmailUuid(emailUuid);
+        validateUser(user);
+        user.setPassword(user.getNewPassword());
+        userRepository.save(user);
+        return "Password change success! You may close this tab.";
     }
 
     /*
@@ -114,6 +145,10 @@ public class UserService {
         return existingUser;
     }
 
+    private void validateUser(User user) {
+        if (user == null || !user.isConfirmedEmail()) throw new NotFoundException("Unable to verify user");
+    }
+
     /*
     When user is created (createNewUser method), user receives email sent to User.email. Email should route user to
     home page of app and log them in automatically.
@@ -122,9 +157,33 @@ public class UserService {
     -  Link will direct you to front end, link will need to have dynamic encrypted word or uuid in it
         so that when user clicks it, they're immediately taken to front end and logged in automatically
      */
-    private void handleEmail(User user) {
-        emailService.sendEmail(user.getEmail(),
-                "Wordle by Kieran User Confirmation!",
-                "Please Click This Link to Login\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    private void handleNewUserEmail(User user) {
+        try {
+            emailService.sendEmail(user.getEmail(),
+                    "Wordle by Kieran - User Confirmation!",
+                    "Please Click This Link to Login\nhttp://localhost:8080/email/login/" + user.getEmailUuid());
+        } catch (Exception e) {
+            throw new NotFoundException("Invalid email: " + user.getEmail());
+        }
+    }
+
+    private void resetPasswordEmail(User user) {
+        try {
+            emailService.sendEmail(user.getEmail(),
+                    "Wordle by Kieran - Reset Password Request",
+                    "Please click this link to reset your password\nhttp://localhost:4200/set-password/" + user.getResetPasswordUuid());
+        } catch (Exception e) {
+            throw new NotFoundException("Invalid email: " + user.getEmail());
+        }
+    }
+
+    private void confirmPasswordResetEmail(User user) {
+        try {
+            emailService.sendEmail(user.getEmail(),
+                    "Wordle by Kieran - Reset Password Confirmation!",
+                    "Success! Please Click This Link to Confirm Password Change\nhttp://localhost:8080/confirm-password-change/" + user.getEmailUuid());
+        } catch (Exception e) {
+            throw new NotFoundException("Invalid email: " + user.getEmail());
+        }
     }
 }
