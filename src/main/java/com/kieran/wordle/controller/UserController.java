@@ -24,13 +24,8 @@ public class UserController {
         return userService.findUserByUsername(username);
     }
 
-    @GetMapping("email/login/{uuid}")
-    public String loginViaEmailUuid(@PathVariable String uuid) {
-        return userService.loginViaEmailUuid(uuid);
-    }
-
     @PostMapping("login")
-    public Boolean isValidUser(@RequestBody LoginModel loginModel) {
+    public UserResponseDto isValidUser(@RequestBody LoginModel loginModel) {
         return userService.validateLogin(loginModel);
     }
 

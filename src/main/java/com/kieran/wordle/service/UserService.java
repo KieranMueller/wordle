@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,43 +27,26 @@ public class UserService {
     private final EmailService emailService;
     private final BCryptPasswordEncoder encoder;
 
-    /*
-    We want to find a user by username. User found with username (ignoring case) must have confirmed email,
-    if so, we map the User found to a UserResponseObject to mask password, email, phone etc. and return user.
-    TODO
-     */
     public UserResponseDto findUserByUsername(String username) {
         User user = userRepository.findByUsernameIgnoreCaseAndConfirmedEmailTrue(username);
         if (user == null) throw new NotFoundException("Unable to find user with username " + username);
         else return UserResponseDto.mapUserToUserResponseDto(user);
     }
 
-    public String loginViaEmailUuid(String uuid) {
-        User user = userRepository.findByEmailUuid(uuid);
-        if (user == null) throw new BadRequestException("Something went wrong");
-        user.setConfirmedEmail(true);
-        userRepository.save(user);
-        return "Good to go " + user.getUsername() + "! Please revisit the site and sign in";
-    }
-
-    /*
-    Here we take in a loginModel (username and password), if username exists in DB, and the encoded password tied to
-    the user with said username equals the request body password, we return true, else false.
-    TODO
-     */
-    public Boolean validateLogin(LoginModel loginModel) {
+    public UserResponseDto validateLogin(LoginModel loginModel) {
         User user = userRepository.findByUsernameIgnoreCase(loginModel.getUsername());
-        return (user != null && user.isConfirmedEmail() && encoder.matches(loginModel.getPassword(), user.getPassword()));
+        if (user != null && encoder.matches(loginModel.getPassword(), user.getPassword())) {
+            if (user.isConfirmedEmail() && loginModel.getEmailUuid().isBlank()) {
+                return UserResponseDto.mapUserToUserResponseDto(user);
+            } else if (!user.isConfirmedEmail() && Objects.equals(user.getEmailUuid(), loginModel.getEmailUuid())) {
+                user.setConfirmedEmail(true);
+                user.setEmailUuid(UUID.randomUUID().toString());
+                userRepository.saveAndFlush(user);
+                return UserResponseDto.mapUserToUserResponseDto(user);
+            } else throw new BadRequestException("Check email to login");
+        } else throw new BadRequestException("Bad credentials");
     }
 
-    /*
-    A user wants to create an account, we receive a user, we throw bad request if username or email ignore case
-    already exists (since they'd be an existing user that shoud login normally). We encrypt their password then
-    save the user in the DB. We call the handle email method (see method for explanation) then return 201.
-    TODO
-    - handle validation errors
-    - implement email service (not finished!!)
-     */
     public UserResponseDto createNewUser(User user) {
         if (userRepository.findByUsernameIgnoreCase(user.getUsername()) != null)
             throw new BadRequestException("Username already exists");
@@ -82,13 +66,13 @@ public class UserService {
         return UserResponseDto.mapUserToUserResponseDto(user);
     }
 
-    // setting new email uuid to make things more secure, in the final email confirm, we need to find this user by the
-    // new email uuid, then set the new password etc.
     public UserResponseDto createNewPassword(NewPasswordRequest newPasswordRequest) {
         User user = userRepository.findByResetPasswordUuid(newPasswordRequest.getResetPasswordUuid());
         validateUser(user);
-        String newUuid = UUID.randomUUID().toString();
-        user.setEmailUuid(newUuid);
+        String newEmailUuid = UUID.randomUUID().toString();
+        String newResetPasswordUuid = UUID.randomUUID().toString();
+        user.setEmailUuid(newEmailUuid);
+        user.setResetPasswordUuid(newResetPasswordUuid);
         user.setNewPassword(encoder.encode(newPasswordRequest.getPassword()));
         User savedUser = userRepository.save(user);
         confirmPasswordResetEmail(savedUser);
@@ -103,12 +87,6 @@ public class UserService {
         return "Password change success! You may close this tab.";
     }
 
-    /*
-    A user can update their first, last name, or phone ONLY in this method. If user doesn't exist in DB, return 400.
-    Call updateUserFields method to map non blank fields sent in request body and update existing user object.
-    Save user and return 200.
-    TODO
-     */
     public UserResponseDto updateUser(User user) {
         Optional<User> opUser = userRepository.findById(user.getId());
         if (opUser.isEmpty()) throw new NotFoundException("Unable to find user with ID: " + user.getId());
@@ -117,11 +95,6 @@ public class UserService {
         return UserResponseDto.mapUserToUserResponseDto(savedUser);
     }
 
-    /*
-    A user wants to delete their account, if they do not exist in DB, return 400
-    else: we delete all wordles they created (based on Wordle.ownerId), delete user, and return 200.
-    TODO
-     */
     @Transactional
     public UserResponseDto deleteUser(Long id) {
         Optional<User> opUser = userRepository.findById(id);
@@ -131,10 +104,6 @@ public class UserService {
         return UserResponseDto.mapUserToUserResponseDto(opUser.get());
     }
 
-    /*
-    Helper method to map first name, last name, and/or phone to user object for patch endpoint (update user)
-    TODO
-     */
     private User updateUserFields(User updatedUser, User existingUser) {
         if (updatedUser.getFirstName() != null && !updatedUser.getFirstName().isBlank())
             existingUser.setFirstName(updatedUser.getFirstName());
@@ -149,19 +118,12 @@ public class UserService {
         if (user == null || !user.isConfirmedEmail()) throw new NotFoundException("Unable to verify user");
     }
 
-    /*
-    When user is created (createNewUser method), user receives email sent to User.email. Email should route user to
-    home page of app and log them in automatically.
-    TODO
-    - Unfinished
-    -  Link will direct you to front end, link will need to have dynamic encrypted word or uuid in it
-        so that when user clicks it, they're immediately taken to front end and logged in automatically
-     */
     private void handleNewUserEmail(User user) {
         try {
             emailService.sendEmail(user.getEmail(),
                     "Wordle by Kieran - User Confirmation!",
-                    "Please Click This Link to Login\nhttp://localhost:8080/email/login/" + user.getEmailUuid());
+                    "Please Click This Link to Login\nhttp://localhost:4200/login/"
+                            + user.getUsername() + "/" + user.getEmailUuid());
         } catch (Exception e) {
             throw new NotFoundException("Invalid email: " + user.getEmail());
         }
