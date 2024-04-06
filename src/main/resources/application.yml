@@ -1,6 +1,8 @@
 server:
   port: 8080
 spring:
+  config:
+    import: env.properties
   mail:
     host: live.smtp.mailtrap.io
     port: 2525
@@ -15,12 +17,14 @@ spring:
   application:
     name: wordle
   jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
     show-sql: false
   datasource:
-    url: jdbc:mysql://localhost:3306/wordle
-    username: root
-    password: root
+    url: ${prodDBUrl}
+    username: ${prodDBUsername}
+    password: ${prodDBPassword}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
