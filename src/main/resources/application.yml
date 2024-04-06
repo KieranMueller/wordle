@@ -7,7 +7,7 @@ spring:
     host: live.smtp.mailtrap.io
     port: 2525
     username: api
-    password: c67e7be0a035300a65a828fdfbf76432
+    password: ${mailPassword}
     properties:
       mail:
         smtp:
@@ -17,10 +17,9 @@ spring:
   application:
     name: wordle
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
   datasource:
     url: ${prodDBUrl}
