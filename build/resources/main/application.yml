@@ -1,0 +1,29 @@
+server:
+  port: 8080
+spring:
+  config:
+    import: env.properties
+  mail:
+    host: live.smtp.mailtrap.io
+    port: 2525
+    username: api
+    password: ${mailPassword}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  application:
+    name: wordle
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  datasource:
+    url: ${prodDBUrl}
+    username: ${prodDBUsername}
+    password: ${prodDBPassword}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
