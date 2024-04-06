@@ -22,10 +22,13 @@ public class Wordle {
     private Long ownerId;
     private String word;
     @Builder.Default
-    private Integer attempts = 5;
+    private Integer attempts = 6;
     @Builder.Default
     private Integer winners = 0;
-    private Integer timeLimit;
+    @Builder.Default
+    private String timeLimit = "none";
+    @Builder.Default
+    boolean greenTilesOnly = false;
     private List<String> hints;
     @Builder.Default
     private UUID uuidLink = UUID.randomUUID();
