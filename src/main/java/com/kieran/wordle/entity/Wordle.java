@@ -1,5 +1,6 @@
 package com.kieran.wordle.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,18 +19,16 @@ public class Wordle {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Schema(hidden = true)
     private Long id;
+    @Schema(hidden = true)
     private Long ownerId;
     private String word;
     @Builder.Default
     private Integer attempts = 6;
     @Builder.Default
-    private Integer winners = 0;
-    @Builder.Default
     private String timeLimit = "none";
     @Builder.Default
-    boolean greenTilesOnly = false;
-    private List<String> hints;
-    @Builder.Default
+    @Schema(hidden = true)
     private UUID uuidLink = UUID.randomUUID();
 }
