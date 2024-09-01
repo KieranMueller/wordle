@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -22,31 +22,24 @@ jobs:
           java-version: '17'
           distribution: 'microsoft'
 
-      - name: Build with Gradle
-        env:
-          MAILPASSWORD: ${{secrets.MAILPASSWORD}}
-          PRODDBURL: ${{secrets.PRODDBURL}}
-          PRODDBUSERNAME: ${{secrets.PRODDBUSERNAME}}
-          PRODDBPASSWORD: ${{secrets.PRODDBPASSWORD}}
-        run: |
-          chmod +x gradlew
-          ./gradlew clean build
+      - name: Build with Maven
+        run: mvn clean install
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/build/libs/*SNAPSHOT.jar'
+          path: '${{ github.workspace }}/target/*.jar'
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
-  
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -56,9 +49,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C6482E7BB3FB4BE095ADC6BA2CCD699B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_39383EC34C3D454C9729D306BE5ABF26 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7420F40437884E69AE8ADD6E03FF8EEF }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CABFCEA444174AE4B7844D9A4F286D7B }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BE3D31C3108D47359550F25061E27700 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0D52654C81ED47F79E2B9C4746BDC33B }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
