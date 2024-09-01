@@ -7,7 +7,7 @@ spring:
     host: live.smtp.mailtrap.io
     port: 2525
     username: api
-    password: ${mailPassword}
+    password: ${MAILPASSWORD}
     properties:
       mail:
         smtp:
@@ -19,12 +19,12 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
-#      ddl-auto: create-drop
+#      ddl-auto: update
+      ddl-auto: create-drop
+      dialect: org.hibernate.dialect.SQLServer2012Dialect
     show-sql: false
   datasource:
-    url: ${prodDBUrl}
-    username: ${prodDBUsername}
-    password: ${prodDBPassword}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
+    url: ${PRODDBURL}
+    username: ${PRODDBUSERNAME}
+    password: ${PRODDBPASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

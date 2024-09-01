@@ -36,9 +36,9 @@ public class UserService {
     public UserResponseDto validateLogin(LoginModel loginModel) {
         User user = userRepository.findByUsernameIgnoreCase(loginModel.getUsername());
         if (user != null && encoder.matches(loginModel.getPassword(), user.getPassword())) {
-            if (user.isConfirmedEmail() && loginModel.getEmailUuid().isBlank()) {
+            if (user.getConfirmedEmail() && loginModel.getEmailUuid().isBlank()) {
                 return UserResponseDto.mapUserToUserResponseDto(user);
-            } else if (!user.isConfirmedEmail() && Objects.equals(user.getEmailUuid(), loginModel.getEmailUuid())) {
+            } else if (!user.getConfirmedEmail() && Objects.equals(user.getEmailUuid(), loginModel.getEmailUuid())) {
                 user.setConfirmedEmail(true);
                 user.setEmailUuid(UUID.randomUUID().toString());
                 userRepository.saveAndFlush(user);
@@ -115,7 +115,7 @@ public class UserService {
     }
 
     private void validateUser(User user) {
-        if (user == null || !user.isConfirmedEmail()) throw new NotFoundException("Unable to verify user");
+        if (user == null || !user.getConfirmedEmail()) throw new NotFoundException("Unable to verify user");
     }
 
     private void handleNewUserEmail(User user) {

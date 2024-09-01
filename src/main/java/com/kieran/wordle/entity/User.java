@@ -1,9 +1,6 @@
 package com.kieran.wordle.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -11,6 +8,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
+@Table(name = "user_table")
 @Builder
 @Getter
 @Setter
@@ -32,7 +30,7 @@ public class User {
     private int currentWordlesOwned;
     @Builder.Default
     private String emailUuid = String.valueOf(UUID.randomUUID());
-    private boolean confirmedEmail;
+    private Boolean confirmedEmail;
     @Builder.Default
     private String resetPasswordUuid = String.valueOf(UUID.randomUUID());
     private String newPassword;
