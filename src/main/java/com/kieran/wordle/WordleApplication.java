@@ -12,7 +12,7 @@ public class WordleApplication {
 
 }
 // TODO
-
+//
 // Where I left off: got bcrypt passwords working, need to figure out email login authentication, might need front
 //end up and running in order to do so. Start on the front end? Create figma project first! Create full front end
 // template before diving in, actually do this
