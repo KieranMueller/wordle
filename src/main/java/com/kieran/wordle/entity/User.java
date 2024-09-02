@@ -8,7 +8,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_table")
+@Table(name = "wordle_user_table")
 @Builder
 @Getter
 @Setter
