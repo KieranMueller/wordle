@@ -10,8 +10,14 @@ public class TestController {
     @Value("${sample-greeting}")
     private String greeting;
 
+    @Value("${sample-url:oops}")
+    private String url;
+
+    @Value("${sample-username:uh-oh}")
+    private String username;
+
     @GetMapping("/greeting")
     public String greeting() {
-        return greeting;
+        return greeting + "-" + url + "-" + username;
     }
 }
