@@ -29,7 +29,7 @@ spring:
     password: ${PRODDBPASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 #---
-#sample-greeting: ${SAMPLEGREETING:Hello there!}
+sample-greeting: ${SAMPLEGREETING:Hello there!}
 #spring:
 #  datasource:
 #    url: jdbc:h2:mem:testdb
