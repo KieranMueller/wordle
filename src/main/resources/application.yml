@@ -22,7 +22,7 @@ spring:
     open-in-view: false
     hibernate:
       #      ddl-auto: update
-      ddl-auto: create
+      ddl-auto: none
       dialect: org.hibernate.dialect.SQLServer2012Dialect
     show-sql: true
   datasource:
