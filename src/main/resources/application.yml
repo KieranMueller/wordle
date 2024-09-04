@@ -18,7 +18,7 @@ spring:
     open-in-view: false
     hibernate:
       #      ddl-auto: update
-      ddl-auto: update
+      ddl-auto: create-drop
       show-sql: false
       dialect: org.hibernate.dialect.SQLServer2012Dialect
 ---
@@ -45,4 +45,3 @@ sample-username: ${PRODDBUSERNAME:fail}
 #  h2:
 #    console:
 #      enabled: true
----
