@@ -28,20 +28,3 @@ spring:
     username: ${PRODDBUSERNAME}
     password: ${PRODDBPASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
----
-sample-greeting: ${SAMPLEGREETING:Hello there!}
-sample-url: ${PRODDBURL:fail}
-sample-username: ${PRODDBUSERNAME:fail}
----
-#spring:
-#  datasource:
-##    url: jdbc:h2:mem:testdb
-#    url: ${PRODDBURL}
-#    driverClassName: org.h2.Driver
-##    username: sa
-#    username: ${PRODDBUSERNAME}
-##    password:
-#    password: ${PRODDBPASSWORD}
-#  h2:
-#    console:
-#      enabled: true
