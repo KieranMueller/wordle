@@ -17,30 +17,30 @@ spring:
   application:
     name: wordle
 ---
-spring:
-  jpa:
-    open-in-view: false
-    hibernate:
-      #      ddl-auto: update
-      ddl-auto: create
-      dialect: org.hibernate.dialect.SQLServerDialect
-    show-sql: true
-  datasource:
-    url: ${PRODDBURL:fail}
-    username: ${PRODDBUSERNAME:fail}
-    password: ${PRODDBPASSWORD:fail}
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#spring:
+#  jpa:
+#    open-in-view: false
+#    hibernate:
+#      #      ddl-auto: update
+#      ddl-auto: create
+#      dialect: org.hibernate.dialect.SQLServer2012Dialect
+#    show-sql: true
+#  datasource:
+#    url: ${PRODDBURL:fail}
+#    username: ${PRODDBUSERNAME:fail}
+#    password: ${PRODDBPASSWORD:fail}
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 ---
 sample-greeting: ${SAMPLEGREETING:Hello there!}
 sample-url: ${PRODDBURL:fail}
 sample-username: ${PRODDBUSERNAME:fail}
 ---
-#spring:
-#  datasource:
-#    url: jdbc:h2:mem:testdb
-#    driverClassName: org.h2.Driver
-#    username: sa
-#    password:
-#  h2:
-#    console:
-#      enabled: true
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
